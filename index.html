@@ -1,30 +1,38 @@
 <html>
-<button type = "button" id = "b" onclick = "go();">Go!</button>
-<canvas id = "c" width = "500" height = "500"></canvas>
+<form>
+<button type = "button" id = "b" onclick = "go();">Start</button>
+<p id = "status">Status = Alive</p>
+<p id = "time">Lived for: 0.0 seconds...</p>
+</form>
+<canvas id = "c" width = "500" height = "500" style = "border: black 1px solid"></canvas>
 <script>
 var canvas = document.getElementById("c");
 var interval;
 var ctx = canvas.getContext("2d");
+var startingLength = 5;
 var x = 0, y = 0, direction = 2;
 var length = 5, columns = 50, rows = 50;
 var columnSize = (canvas.width/columns);
 var rowSize = (canvas.height/rows);
 var snakeX = [];
 var snakeY = [];
-var foodX, foodY;
+var foodX, foodY, killTail = true;
 var grid;
+var startingTime;
 var go = function() {
-	generatePoint();
+	document.getElementById("b").innerHTML = "Restart";
 	for(var i = 0; i < length; ++i)
 	{
 		snakeX[i] = 10 - i;
 		snakeY[i] = 10;
 	}
+	length = startingLength;
     clearInterval(interval);
     interval = setInterval(tick, 20);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	for(var c = 0; c < columns; ++c)
 	{
+		ctx.strokeStyle = "#b2b2b2";
 		ctx.beginPath();
 		ctx.moveTo(columnSize*c, 0);
 		ctx.lineTo(columnSize*c, canvas.height);
@@ -34,50 +42,121 @@ var go = function() {
 		grid = ctx.getImageData(0,0,canvas.width, canvas.height);
 	}	
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	generatePoint();
+	startingTime = new Date().getTime();
 }
+
+var reset = function() {
+	clearInterval(interval);
+}
+	
+
 var generatePoint = function() {
-	foodX = Math.floor(Math.random() * columns - 1);
-	foodY = Math.floor(Math.random() * rows - 1);
+	var cont = false;
+	while(!cont)
+	{
+	cont = true;
+	foodX = Math.floor(Math.random() * columns);
+	foodY = Math.floor(Math.random() * rows);
+	for(var i = 0; i < length; ++i)
+	{
+		if(foodX == snakeX[i] && foodY == snakeY[i] || foodX > 49 || foodY > 49)
+		{
+			cont = false;
+			break;
+		}
+	}
+	}
+//	foodX = 30;
+//	foodY = snakeY[0];
+	console.log("New snake food placed at " + foodX + ", " + foodY);
 }
 
 var getDecision = function()
 {
 	var d = 0;
-	if(snakeX[0] > 25)
-	d =1;
+	var forwardX = snakeX[0] + x;
+	var forwardY = snakeY[0] + y;
+	var leftX = snakeX[0] + parseXDirection(newDirection(-1));
+	var leftY = snakeY[0] + parseYDirection(newDirection(-1));
+	var rightX = snakeX[0] + parseXDirection(newDirection(1));
+	var rightY = snakeY[0] + parseYDirection(newDirection(1));
+	var forwardD = Math.abs(foodX - forwardX) + Math.abs(foodY - forwardY);
+	var leftD = Math.abs(foodX - leftX) + Math.abs(foodY - leftY);
+	var rightD = Math.abs(foodX - rightX) + Math.abs(foodY - rightY);
+//	console.log(forwardD + " vs " + leftD + " vs " + rightD);
+	if(forwardD <= leftD && forwardD <= rightD)
+		d = 0;
+	else if(leftD <= forwardD && leftD <= rightD)
+		d = -1;
+	else if(rightD <= leftD && rightD <= forwardD)
+		d = 1;
 	return d;
+}
+
+var newDirection = function(dec) //input a decision (1, 0, -1) and it returns the new direction you will be traveling
+{
+	var newD = direction;
+	if(dec == -1)
+		newD--; //left
+	else if(dec == 1)
+		newD++; //right
+	if(newD > 4)
+		newD -= 4;
+	else if(newD < 1)
+		newD += 4;
+	return newD;
+}
+
+var parseXDirection = function(d)
+{
+	var newX;
+	if(d == 1)
+	{
+		newX = 0;
+	}
+	else if(d == 2)
+	{
+		newX = 1;
+	}
+	else if(d == 3)
+	{
+		newX = 0;
+	}
+	else if(d == 4)
+	{
+		newX = -1;
+	}
+	return newX;
+}
+var parseYDirection = function(d)
+{ 
+	var newY;
+	if(d == 1)
+	{
+		newY = -1;
+	}
+	else if(d == 2)
+	{
+		newY = 0;
+	}
+	else if(d == 3)
+	{
+		newY = 1;
+	}
+	else if(d == 4)
+	{
+		newY = 0;
+	}
+	return newY;
 }
 var tick = function() 
 {
+	document.getElementById("time").innerHTML = "Lived for: " +(new Date().getTime() - startingTime)/100 + " seconds...";
 	var decision = getDecision(); //all AI behavior should be here
-	if(decision == -1)
-		direction--; //left
-	else if(decision == 1)
-		direction++; //right
-	if(direction > 4)
-		direction -= 4;
-	else if(direction < 1)
-		direction += 4;
-	if(direction == 1)
-	{
-		x = 0;
-		y = -1;
-	}
-	else if(direction == 2)
-	{
-		x = 1;
-		y = 0;
-	}
-	else if(direction == 3)
-	{
-		x = 0;
-		y = 1;
-	}
-	else if(direction == 4)
-	{
-		x = -1;
-		y = 0;
-	}
+	direction = newDirection(decision);
+	x = parseXDirection(direction);
+	y = parseYDirection(direction);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.putImageData(grid, 0, 0);
 	for(var i = length-1; i > 0; --i)
@@ -90,16 +169,42 @@ var tick = function()
 	for(var i = 0; i < length; ++i)
 	{
 		ctx.fillStyle = "red";
+		if(i == 0)
+			ctx.fillStyle = "black";
 		ctx.fillRect(snakeX[i]*columnSize,snakeY[i]*rowSize, columnSize, rowSize);
 	}
 	ctx.fillRect(foodX * columnSize, foodY * rowSize, columnSize, rowSize);
+	checkDeath();
+	checkFood();
+}
+
+var checkDeath = function()
+{
+	var alive = true;
 	if(snakeX[0] > 49 || snakeX[0] < 0 || snakeY[0] > 49 || snakeY[0] < 0)
-		clearInterval(interval);
+		alive = false;
 	for(var i = 1; i < length; ++i)
 	{
 	if(snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i])
-		clearInterval(interval);
+		alive = false;
 	}
+	if(!alive)
+	{
+		clearInterval(interval);
+		document.getElementById("status").innerHTML = "Status = Dead";
+	}
+}
+
+var checkFood = function()
+{
+	if(snakeX[0] == foodX && snakeY[0] == foodY)
+	{
+		length++;
+		killTail = false;
+	generatePoint();
+	}
+	else
+		killTail = true;
 }
 </script>
 </html>
