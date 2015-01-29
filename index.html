@@ -152,7 +152,7 @@ var parseYDirection = function(d)
 }
 var tick = function() 
 {
-	document.getElementById("time").innerHTML = "Lived for: " +(new Date().getTime() - startingTime)/100 + " seconds...";
+	document.getElementById("time").innerHTML = "Lived for: " +(new Date().getTime() - startingTime)/1000 + " seconds...";
 	var decision = getDecision(); //all AI behavior should be here
 	direction = newDirection(decision);
 	x = parseXDirection(direction);
