@@ -1,2 +1,4 @@
 # SnakeAI
-basic web-based snake AI
+Basic web-based snake AI.
+
+Available at http://jake-white.github.io/SnakeAI
