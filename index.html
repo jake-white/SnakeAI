@@ -23,6 +23,8 @@ var grid;
 var startingTime, ticks = 0;
 var go = function() {
 	document.getElementById("b").innerHTML = "Restart";
+	document.getElementById("status").innerHTML = "Status = Alive";
+	ticks = 0;
 	for(var i = 0; i < length; ++i)
 	{
 		snakeX[i] = 10 - i;
@@ -77,6 +79,7 @@ var generatePoint = function() {
 var getDecision = function()
 {
 	var d = 0;
+	var forward = true, left = true, right = true;	
 	var forwardX = snakeX[0] + x;
 	var forwardY = snakeY[0] + y;
 	var leftX = snakeX[0] + parseXDirection(newDirection(-1));
@@ -87,11 +90,28 @@ var getDecision = function()
 	var leftD = Math.abs(foodX - leftX) + Math.abs(foodY - leftY);
 	var rightD = Math.abs(foodX - rightX) + Math.abs(foodY - rightY);
 //	console.log(forwardD + " vs " + leftD + " vs " + rightD);
-	if(forwardD <= leftD && forwardD <= rightD)
+	for(var i = 0; i < length; ++i)
+	{
+		if((forwardX == snakeX[i] && forwardY == snakeY[i]) || forwardX > columns - 1 || forwardX < 0 || forwardY > rows - 1 || forwardY < 0)
+		{
+			forward = false
+		}
+		if((rightX == snakeX[i] && rightY == snakeY[i]) || rightX > columns - 1 || rightX < 0 || rightY > rows - 1 || rightY < 0)
+		{
+			right = false
+		}
+		if((leftX == snakeX[i] && leftY == snakeY[i]) || leftX > columns - 1 || leftX < 0 || leftY > rows - 1 || leftY < 0)
+		{
+			left = false
+		}
+	}
+	if((forwardD <= leftD || !left) && (forwardD <= rightD || !right) && forward)
+	{
 		d = 0;
-	else if(leftD <= forwardD && leftD <= rightD)
+	}
+	else if((leftD <= forwardD || !forward) && (leftD <= rightD || !right) && left)
 		d = -1;
-	else if(rightD <= leftD && rightD <= forwardD)
+	else if((rightD <= leftD || !left) && (rightD <= forwardD || !forward) && right)
 		d = 1;
 	return d;
 }
