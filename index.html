@@ -4,6 +4,7 @@
 <button type = "button" id = "b" onclick = "go();">Start</button>
 <p id = "status">Status = Alive</p>
 <p id = "time">Lived for: 0.0 seconds...</p>
+<p id = "tick">Lived for: 0 ticks</p>
 </form>
 <canvas id = "c" width = "500" height = "500" style = "border: black 1px solid"></canvas>
 <script>
@@ -19,7 +20,7 @@ var snakeX = [];
 var snakeY = [];
 var foodX, foodY, killTail = true;
 var grid;
-var startingTime;
+var startingTime, ticks = 0;
 var go = function() {
 	document.getElementById("b").innerHTML = "Restart";
 	for(var i = 0; i < length; ++i)
@@ -154,6 +155,8 @@ var parseYDirection = function(d)
 var tick = function() 
 {
 	document.getElementById("time").innerHTML = "Lived for: " +(new Date().getTime() - startingTime)/1000 + " seconds...";
+	ticks++;
+	document.getElementById("tick").innerHTML = "Lived for: " + ticks + " ticks";
 	var decision = getDecision(); //all AI behavior should be here
 	direction = newDirection(decision);
 	x = parseXDirection(direction);
